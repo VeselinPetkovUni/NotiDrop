@@ -1,0 +1,473 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NotiDrop</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .sidebar {
+            width: 25%;
+            background-color: #f4f4f4;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .main-content {
+            width: 75%;
+            padding: 20px;
+        }
+
+        #linkAttachmentContainer {
+            margin-top: 20px; /* Fügt 20px Abstand oben hinzu */
+        }
+
+        .info-box {
+            width: 100%;
+            max-width: 1200px;
+            background-color: #f4f4f4;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, p, label {
+            margin-bottom: 15px;
+        }
+
+        select, button {
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        #resume {
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul li {
+            margin-bottom: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+        .long-text-input {
+            width: 650px;  /* Breite des Eingabefelds */
+            height: 170px;
+            padding: 8px;  /* Innerer Abstand */
+            font-size: 16px;  /* Schriftgröße */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Erklärungen zu den Hauptkategorien der Taxonomie</h2>
+            <ul id="categoryList">
+                <!-- Kategorien werden hier dynamisch eingefügt -->
+            </ul>
+        </div>
+        <div class="main-content">
+            <h1>NotiDrop</h1>
+            <p>Diese Plattform soll Ihnen dabei helfen, Informationssicherheitsvorfälle zu bewältigen. Bitte wählen Sie im unteren Teil die zutreffende Kategorie aus.</p>
+            <form id="taxonomyForm">
+                <label for="number">Geben Sie dem ISV eine ID: </label><br>
+                <input type="text" id="isvID" name="isvID"><br>
+                <label for="category">Um welche Kategorie von ISV handelt es sich?:</label>
+                <select id="category" name="category">
+                    <option value="" disabled selected>Wählen Sie eine Kategorie</option>
+                    <!-- Optionen werden dynamisch eingefügt -->
+                </select>
+
+                <label for="incident">Beispiel für einen Vorfall auswählen:</label>
+                <select id="incident" name="incident" disabled>
+                    <option value="" disabled selected>Wählen Sie einen Vorfall</option>
+                    <!-- Optionen werden dynamisch eingefügt -->
+                </select>
+
+                <label for="details" class="hidden">Details auswählen:</label>
+                <select id="details" name="details" class="hidden">
+                    <option value="" disabled selected>Wählen Sie ein Detail</option>
+                    <!-- Optionen werden dynamisch eingefügt -->
+                </select>
+                
+                <div id="checkboxContainer" class="hidden">
+                    <label id="detailsLabel" class="hidden">Wählen Sie weitere Details:</label>
+                    <div id="checkboxes">
+                        <!-- Checkbox-Optionen werden dynamisch eingefügt -->
+                    </div>
+                    <div id="linkAttachmentContainerAttachment" class="hidden">
+                        <label>----------------------------------------------------------------------------<br>Bitte einen Haken setzen, falls etwas zustimmt:<br></label>
+                        <input type="checkbox" id="attachmentDownloaded" name="linkAction" value="downloaded"><label for="attachmentDownloaded">Der Anhang wurde heruntergeladen</label><br>
+                        <input type="checkbox" id="attachmentExecuted" name="linkAction" value="executed"><label for="attachmentExecuted">Der Anhang wurde ausgeführt</label>
+                    </div>
+                    <div id="linkAttachmentContainerLink" class="hidden">
+                        <label>----------------------------------------------------------------------------<br>Bitte einen Haken setzen, falls etwas zustimmt:<br></label>
+                        <input type="checkbox" id="linkClicked" name="linkAction" value="clicked"><label for="linkClicked"> Auf den Link wurde geklickt<br></label>
+                    </div>
+                </div>                
+
+
+
+                <div><br>Im Freitextfeld können Sie weitere Informationen hinzufügen:</div>
+                <textarea type="text" class="long-text-input" placeholder="Was für Informationen würden Sie zusätzlich angeben wollen?" id="textdetails"></textarea>
+                
+                <button type="button" id="generateResume">Zusammenfassung erstellen</button>
+                
+            </form>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    var categories = {
+        "Abusive Content": ["Child Sexual Abuse Material", "Content that Incites Hate Crime", "Content that Incites Violence", "Harmful Speech", "Other Abusive Content"],
+        "Malicious Code": ["Malware Infection", "Exploit Kits", "Other Malicious Code"],
+        "Information Gathering": ["Scanning", "Sniffing", "Social Engineering", "Other Information Gathering"],
+        "Intrusion Attempts": ["Exploiting Known Vulnerability", "Login Attempts", "New Attack Signature", "Other Intrusion Attempts"],
+        "Intrusions": ["Privileged Account Compromise", "User Account Compromise", "Application Compromise", "Other Compromise"],
+        "Availability": ["DoS Attack", "DDoS Attack", "Network Outage", "Sabotage"],
+        "Information Content Security": ["Information Leakage", "Unauthorized access to information", "Unauthorized modification of information"],
+        "Fraud": ["Unauthorized Use of Resources", "Copyright", "Masquerade", "Other Fraud"],
+        "Vulnerable Systems": ["Security Standards Enforcement", "Policy Violation", "Other Vulnerable Systems"]
+    };
+
+    var information_gathering = {
+        "Social Engineering": ["E-Mail", "Social Engineering vor Ort", "Social Engineering über das Telefon"],
+        "Scanning": ["Dummy Text"],
+        "Sniffing": ["Dummy Text"]
+    };
+
+    var info_gath_se = {
+        "E-Mail": ["E-Mail besitzt einen Anhang", "E-Mail besitzt einen Link", "BEC-Fraud: Angreifer baut Vertrauen über E-Mail-Kommunikation auf, um manipulativ vorzugehen.", "CEO-Fraud: Angreifer geben sich als Vorgesetzte aus, um Mitarbeiter zu manipulieren."],
+        "Social Engineering vor Ort": ["Dummy Text"],
+        "Social Engineering über das Telefon": ["Dummy Text"]
+    };
+
+    var malicious_code = {
+        "Malware Infection":["E-Mail"],
+        "Exploit Kits": ["E-Mail"],
+        "Other Malicious Code": ["E-Mail"]
+    };
+
+    var mal_code_over_mail = {
+        "E-Mail": ["E-Mail besitzt einen Anhang", "E-Mail besitzt einen Link"],
+    };
+
+    var intrusion_attempts = {
+        "Exploiting Known Vulnerability": ["Dummy Text"],
+        "Login Attempts": ["Dummy Text"],
+        "New Attack Signature": ["Dummy Text"],
+        "Other Intrusion Attempts": ["E-Mail Phishing", "Dummy Text"]
+    };
+
+    var intr_atte_mail = {
+        "E-Mail Spearphishing": ["E-Mail besitzt einen Anhang", "E-Mail besitzt einen Link", "Hoax E-Mail: Falschmeldungen – zumeist mit der Aufforderung verbunden, die Mail an andere Empfänger weiterzuleiten.", "CEO-Fraud: Angreifer geben sich als Vorgesetzte aus, um Mitarbeiter zu manipulieren."],
+    }
+
+    var intrusions = {
+        "Privileged Account Compromise": ["Intrusion via E-Mail"],
+        "User Account Compromise": ["Intrusion via E-Mail"], 
+        "Application Compromise": ["Dummy Text"], 
+        "Other Compromise": ["Intrusion via E-Mail"]
+    }
+
+    var intrusions_mail = {
+        "Intrusion via E-Mail": ["E-Mail besitzt einen Anhang", "E-Mail besitzt einen Link", "E-Mail besitztt eine Bildatei."],
+    }
+
+
+    var fraud = {
+        "Unauthorized Use of Resources": ["Dummy Text"],
+        "Material Gain": ["Dummy Text"],
+        "Other Fraud": ["E-Mail Phishing", "E-Mail Spam"]
+    }
+
+    var fraud_mail = {
+       "E-Mail Phishing": ["E-Mail besitzt einen Anhang", "E-Mail besitzt einen Link", "Hoax E-Mail: Falschmeldungen – zumeist mit der Aufforderung verbunden, die Mail an andere Empfänger weiterzuleiten.", "BEC-Fraud: Angreifer baut Vertrauen über E-Mail-Kommunikation auf, um manipulativ vorzugehen.", "CEO-Fraud: Angreifer geben sich als Vorgesetzte aus, um Mitarbeiter zu manipulieren."],
+       "E-Mail Spam": ["E-Mail besitzt einen Anhang", "E-Mail besitzt einen Link", "Werbespam:  Massenhaft versendete E-Mails, die Produkte oder Dienstleistungen bewerben.", "Scam-Nachrichten: Betrügerische Angebote, die darauf abzielen, das Opfer finanziell zu schädigen, z.B. durch Vorschussbetrug"]
+    }
+
+    var categoryInfoTexts = {
+        "Abusive Content": "Zu Abusive Content gehören schädliche Inhalte wie Material über sexuellen Missbrauch von Kindern, Inhalte, die zu Hassverbrechen oder Gewalt aufrufen.",
+        "Malicious Code": "Umfasst Malware-Infektionen, Exploit-Kits und andere Arten von bösartigem Code.",
+        "Information Gathering": "Dazu gehören Aktivitäten wie Scanning, Sniffing und Social Engineering, um Informationen zu sammeln.",
+        "Intrusion Attempts": "Erfasst werden Versuche, bekannte Schwachstellen auszunutzen, Anmeldeversuche, neue Angriffssignaturen und andere Eindringversuche.",
+        "Intrusions": "Dazu gehören erfolgreiche Angriffe wie die Kompromittierung privilegierter Konten, die Kompromittierung von Benutzerkonten und die Kompromittierung von Anwendungen.",
+        "Availability": "Deckt Vorfälle ab, die die Verfügbarkeit beeinträchtigen, wie DoS-Angriffe, DDoS-Angriffe und Netzwerkausfälle.",
+        "Information Content Security": "Dazu gehören Datenverluste, unbefugte Offenlegung von Informationen, Integritätsverletzungen und andere Probleme der Datesicherheit.",
+        "Fraud": "Erfasst werden Vorfälle von unbefugter Nutzung von Ressourcen, materiellem Gewinn und anderen Arten von Betrugmaschen.",
+        "Vulnerable Systems": "Dazu gehören Themen wie die nicht Einhaltung von Informationssicherheitsstandards, die Durchsetzung von Sicherheitsstandards und Verstöße gegen Richtlinien."
+    };
+
+    var categorySelect = document.getElementById('category');
+    var categoryList = document.getElementById('categoryList');
+    var incidentSelect = document.getElementById('incident');
+    var detailsSelect = document.getElementById('details');
+    var detailsLabel = document.querySelector('label[for="details"]');
+    var checkboxContainer = document.getElementById('checkboxContainer');
+    var checkboxesDiv = document.getElementById('checkboxes');
+ 
+    for (var key in categories) {
+        // Füge Optionen zum Auswahlmenü hinzu
+        var option = document.createElement('option');
+        option.value = key;
+        option.textContent = key;
+        categorySelect.appendChild(option);
+
+        // Füge Kategorien zur Liste im Seitenteil hinzu
+        var listItem = document.createElement('li');
+        var link = document.createElement('a');
+        link.textContent = key;
+        link.classList.add('category-link');
+        link.href = '#';
+        var infoText = document.createElement('span');
+        infoText.classList.add('info-text');
+        infoText.textContent = categoryInfoTexts[key] || "Keine Informationen verfügbar.";
+        listItem.appendChild(link);
+        listItem.appendChild(infoText);
+
+        link.addEventListener('click', function(event) {
+            event.preventDefault();
+            var info = this.nextSibling;
+            var allInfoTexts = document.querySelectorAll('.info-text');
+            allInfoTexts.forEach(function(text) {
+                text.style.display = 'none';
+            });
+            info.style.display = 'block';
+        });
+        categoryList.appendChild(listItem);
+    }
+
+    // Stelle sicher, dass alle Infotexte beim Laden der Seite ausgeblendet sind
+    var allInfoTexts = document.querySelectorAll('.info-text');
+    allInfoTexts.forEach(function(text) {
+        text.style.display = 'none';
+    });
+
+    categorySelect.addEventListener('change', function() {
+        var selectedCategory = this.value;
+        populateIncidents(selectedCategory);
+        incidentSelect.disabled = false;
+
+        var infoText = document.querySelectorAll('.info-text');
+        infoText.forEach(function(text) {
+            text.style.display = 'none';
+        });
+
+        var selectedInfoText = Array.from(document.querySelectorAll('.category-link')).find(link => link.textContent === selectedCategory).nextSibling;
+        selectedInfoText.style.display = 'block';
+    });
+
+    incidentSelect.addEventListener('change', function() {
+        var selectedIncident = this.value;
+        populateDetails(selectedIncident);
+
+        // Text des Labels basierend auf der Auswahl ändern
+        if (selectedIncident === "Social Engineering") {
+            detailsLabel.textContent = "Um was für eine Art Social Engineering handelt es sich:";
+        } else if (selectedIncident === "Malware Infection" || selectedIncident === "Exploit Kits" || selectedIncident === "Other Malicious Code"){
+            detailsLabel.textContent = "Worüber wurde die Schadsoftware heruntergeladen:";
+        }else {
+            detailsLabel.textContent = "Details auswählen:";
+        }
+
+        detailsSelect.classList.remove('hidden');
+        detailsLabel.classList.remove('hidden');
+    });
+
+    detailsSelect.addEventListener('change', function() {
+        var selectedDetail = this.value;
+        populateCheckboxes(selectedDetail);
+        checkboxContainer.classList.remove('hidden');
+    });
+
+    function populateIncidents(category) {
+        incidentSelect.innerHTML = '<option value="" disabled selected>Wählen Sie einen Vorfall</option>';
+        var incidents = categories[category];
+        incidents.forEach(function(incident) {
+            var option = document.createElement('option');
+            option.value = incident;
+            option.textContent = incident;
+            incidentSelect.appendChild(option);
+        });
+    }
+
+    function populateDetails(incident) {
+        detailsSelect.innerHTML = '<option value="" disabled selected>Wählen Sie ein Detail</option>';
+        var details;
+
+        if (incident in information_gathering) {
+            details = information_gathering[incident];
+        } else if (incident in malicious_code) {
+            details = malicious_code[incident];
+        } else if (incident in intrusion_attempts) {
+            details = intrusion_attempts[incident];
+        } else if (incident in intrusions) {
+            details =  intrusions[incident];
+        } else if (incident in fraud){
+            details = fraud[incident];
+        } else {
+            details = [];
+        }
+
+        details.forEach(function(detail) {
+            var option = document.createElement('option');
+            option.value = detail;
+            option.textContent = detail;
+            detailsSelect.appendChild(option);
+        });
+
+        if (details.length === 0) {
+            var defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Keine Details verfügbar';
+            detailsSelect.appendChild(defaultOption);
+        }
+    }
+
+    function populateCheckboxes(detail) {        
+        checkboxesDiv.innerHTML = '';
+        var options = [];
+        var selectedCategory = document.getElementById('category').value;
+        var linkAttachmentContainerLNK = document.getElementById('linkAttachmentContainerLink');
+        var linkAttachmentContainerATT = document.getElementById('linkAttachmentContainerAttachment');
+
+        // Auswahl der Optionsliste basierend auf der gewählten Detail
+        if (selectedCategory == "Information Gathering") {
+            options = info_gath_se[detail] || [];
+        } else if (selectedCategory == "Malicious Code") {
+            options = mal_code_over_mail[detail] || [];
+        } else if (selectedCategory == "Intrusion Attempts") {
+            options = intr_atte_mail[detail] || [];
+        } else if (selectedCategory == "Intrusions") {
+            options = intrusions_mail[detail] || [];
+        } else if (selectedCategory == "Fraud") {
+            options = fraud_mail[detail] || [];
+        }
+
+        // Nur wenn Optionen vorhanden sind, fügen wir Checkboxen hinzu und zeigen das Untermenü an
+        if (options.length > 0) {
+            options.forEach(function(option) {
+                var checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = option;
+                checkbox.id = option;
+
+                var label = document.createElement('label');
+                label.htmlFor = option;
+                label.textContent = option;
+
+                checkboxesDiv.appendChild(checkbox);
+                checkboxesDiv.appendChild(label);
+                checkboxesDiv.appendChild(document.createElement('br'));
+                // Event-Listener für jede Checkbox, die "Link" oder "Anhang" enthält
+                checkbox.addEventListener('change', function() {
+                    if (this.checked && (this.value === "E-Mail besitzt einen Anhang")) {
+                        linkAttachmentContainerATT.classList.remove('hidden');
+                    } else if(this.checked && (this.value === "E-Mail besitzt einen Link")) {
+                        linkAttachmentContainerLNK.classList.remove('hidden');
+                    }else if (this.checked && (this.value === "E-Mail besitzt einen Anhang" && this.value === "E-Mail besitzt einen Link")) {
+                        linkAttachmentContainerATT.classList.remove('hidden');
+                        linkAttachmentContainerLNK.classList.remove('hidden');
+                    } else {
+                        let allChecked = Array.from(document.querySelectorAll('#checkboxes input[type="checkbox"]:checked'));
+                        let anyRelevantChecked = allChecked.some(cb => cb.value === "E-Mail besitzt einen Anhang" || cb.value === "E-Mail besitzt einen Link");
+                        if (!anyRelevantChecked) {
+                            linkAttachmentContainer.classList.add('hidden');
+                        }
+                    }
+                });
+            });
+
+            // Das Untermenü anzeigen
+            checkboxContainer.classList.remove('hidden');
+
+        } else {
+            // Keine Optionen vorhanden, verstecke das Untermenü
+            checkboxContainer.classList.add('hidden');
+        }
+
+    }
+    document.getElementById('generateResume').addEventListener('click', function() {
+        // Sammeln der ausgewählten Daten
+        var isvID = document.getElementById('isvID').value;
+        var selectedCategory = document.getElementById('category').value;
+        var selectedIncident = document.getElementById('incident').value;
+        var selectedDetail = document.getElementById('details').value;
+        var linkClicked = document.getElementById('linkClicked').value;
+        var freetext = document.getElementById('textdetails').value;
+
+    
+        // Sammeln aller ausgewählten Checkbox-Werte
+        var checkboxes = document.querySelectorAll('#checkboxes input[type="checkbox"]:checked');
+        var selectedOptions = Array.from(checkboxes).map(function(checkbox) {
+            return checkbox.value;
+        });
+
+        var checkboxes = document.querySelectorAll('#linkAttachmentContainerAttachment input[type="checkbox"]:checked');
+        var attachmentOptions = Array.from(checkboxes).map(function(checkbox) {
+            return checkbox.value;
+        });
+
+        var checkboxes = document.querySelectorAll('#linkAttachmentContainerLink input[type="checkbox"]:checked');
+        var linkOptions = Array.from(checkboxes).map(function(checkbox) {
+            return checkbox.value;
+        });
+
+        // Erstellen des JSON-Objekts
+        var resumeData = {
+            ISV_ID: isvID,
+            category: selectedCategory,
+            incident: selectedIncident,
+            detail: selectedDetail,
+            additionalDetails: selectedOptions,
+            attachment_Downloaded: attachmentOptions,
+            link_Clicked: linkOptions,
+            freetextDetails: freetext
+        };
+        // Umwandeln des JSON-Objekts in einen String
+        var jsonStr = JSON.stringify(resumeData, null, 2);
+    
+        // Erstellen einer Blob aus dem JSON String
+        var blob = new Blob([jsonStr], { type: 'application/json' });
+    
+        // Erstellen einer URL für den Blob
+        var url = URL.createObjectURL(blob);
+    
+        // Erstellen eines temporären <a> Tags zum Download
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'resume.json';
+        document.body.appendChild(a);
+        a.click();
+    
+        // Entfernen des temporären <a> Tags
+        document.body.removeChild(a);
+    });
+});
+
+    </script>
+</body>
+</html>
