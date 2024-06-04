@@ -136,6 +136,10 @@
                 
                 <button type="button" id="generateResume">Zusammenfassung erstellen</button>
                 
+                <pre id="textToCopyResume" calss="main-content">
+                    <!-- Optionen werden dynamisch eingefügt -->
+                </pre>
+                
             </form>
         </div>
     </div>
@@ -228,7 +232,9 @@
     var detailsLabel = document.querySelector('label[for="details"]');
     var checkboxContainer = document.getElementById('checkboxContainer');
     var checkboxesDiv = document.getElementById('checkboxes');
- 
+    var textToCopyResumeDiv = document.getElementById('textToCopyResume');
+
+
     for (var key in categories) {
         // Füge Optionen zum Auswahlmenü hinzu
         var option = document.createElement('option');
@@ -418,7 +424,7 @@
         var selectedDetail = document.getElementById('details').value;
         var linkClicked = document.getElementById('linkClicked').value;
         var freetext = document.getElementById('textdetails').value;
-
+        textToCopyResumeDiv.innerHTML = '';
     
         // Sammeln aller ausgewählten Checkbox-Werte
         var checkboxes = document.querySelectorAll('#checkboxes input[type="checkbox"]:checked');
@@ -449,23 +455,11 @@
         };
         // Umwandeln des JSON-Objekts in einen String
         var jsonStr = JSON.stringify(resumeData, null, 2);
-    
-        // Erstellen einer Blob aus dem JSON String
-        var blob = new Blob([jsonStr], { type: 'application/json' });
-    
-        // Erstellen einer URL für den Blob
-        var url = URL.createObjectURL(blob);
-    
-        // Erstellen eines temporären <a> Tags zum Download
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = 'resume.json';
-        document.body.appendChild(a);
-        a.click();
-    
-        // Entfernen des temporären <a> Tags
-        document.body.removeChild(a);
+        // Ausgeben des Strings
+        textToCopyResumeDiv.textContent = jsonStr;
+        
     });
+
 });
 
     </script>
