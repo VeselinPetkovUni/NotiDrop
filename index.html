@@ -14,6 +14,23 @@
             align-items: center;
         }
 
+        footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width:100%;
+            padding: 3px;
+            background-color: white;
+            color:#ed6600;
+        }
+
+        footer img{
+            max-width: 20%;
+            margin-right: 25px;
+        }
+
+
+
         .container {
             display: flex;
             width: 100%;
@@ -36,6 +53,7 @@
         #linkAttachmentContainer {
             margin-top: 20px; /* Fügt 20px Abstand oben hinzu */
         }
+
 
         .info-box {
             width: 100%;
@@ -70,6 +88,100 @@
             margin-bottom: 10px;
         }
 
+        a.category-link {
+            display: flex;
+            justify-content: space-between;
+            padding: 1.5rem 1.5rem 1.5rem 5rem;
+            font-size: 1rem;
+            transition: background-color 0.3s, border-color 0.3s;
+            color: #0070f3;
+            position: relative;
+            text-decoration: none;
+        }
+
+        a.category-link:hover {
+            background-color: rgba(0, 112, 243, 0.1);
+        }
+
+        a.category-link::before {
+            content: '';
+            position: absolute;
+            left: -1px;
+            top: 0;
+            height: 100%;
+            border-left: 2px solid transparent;
+            transition: border-color 0.3s;
+        }
+
+        a.category-link:hover::before {
+            border-color: #0070f3;
+        }
+
+        a.category-link svg {
+            transform: rotate(90deg);
+            transition: transform 0.3s;
+        }
+
+        a.category-link:hover svg {
+            transform: rotate(270deg);
+        }
+
+        a.category-link .group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        a.category-link .group:hover {
+            color: #0070f3;
+        }
+
+        a.category-link .group svg path {
+            transition: stroke-opacity 0.3s;
+        }
+
+        a.category-link .group:hover svg path {
+            stroke-opacity: 1;
+        }
+
+        .info-text {
+            display: block; /* Stellen Sie sicher, dass es sich wie ein Blockelement verhält */
+            padding: 10px; /* Fügen Sie Padding hinzu für bessere Sichtbarkeit */
+            background-color: #f0f0f0; /* Hintergrundfarbe für bessere Lesbarkeit */
+            border-radius: 5px; /* Abgerundete Ecken */
+            margin-top: 10px; /* Abstand nach oben */
+        }
+
+        .group {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .group:hover {
+            background-color: rgba(0, 112, 243, 0.25);
+        }
+
+        .group svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(0deg);
+            transition: transform 0.3s, stroke-opacity 0.3s;
+        }
+
+        .group:hover svg {
+            transform: rotate(90deg);
+            stroke-opacity: 1;
+        }
+
         .hidden {
             display: none;
         }
@@ -79,6 +191,8 @@
             padding: 8px;  /* Innerer Abstand */
             font-size: 16px;  /* Schriftgröße */
         }
+
+
     </style>
 </head>
 <body>
@@ -163,6 +277,11 @@
             </form>
         </div>
     </div>
+    <footer>
+        <img src="unibwlogo.png">
+        <p>2024 Veselin Petkov</p>
+
+    </footer>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var categories = {
@@ -207,7 +326,7 @@
             };
 
             var intr_atte_mail = {
-                "E-Mail Spearphishing": ["E-Mail besitzt einen Anhang", "E-Mail besitzt einen Link", "Hoax E-Mail: Falschmeldungen – zumeist mit der Aufforderung verbunden, die Mail an andere Empfänger weiterzuleiten.", "CEO-Fraud: Angreifer geben sich als Vorgesetzte aus, um Mitarbeiter zu manipulieren."],
+                "E-Mail Phishing": ["E-Mail besitzt einen Anhang", "E-Mail besitzt einen Link", "Hoax E-Mail: Falschmeldungen – zumeist mit der Aufforderung verbunden, die Mail an andere Empfänger weiterzuleiten.", "CEO-Fraud: Angreifer geben sich als Vorgesetzte aus, um Mitarbeiter zu manipulieren."],
             }
 
             var intrusions = {
